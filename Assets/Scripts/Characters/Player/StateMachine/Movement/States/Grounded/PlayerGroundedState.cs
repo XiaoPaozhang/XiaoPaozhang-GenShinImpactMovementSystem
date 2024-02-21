@@ -43,7 +43,6 @@ namespace XFramework.FSM
         //hit.normal: 是一个向量，表示射线检测（Raycast）命中的表面的法线
         //new Ray().direction: 获取射线方向,这里我们需要的是向上的,和地面向量一致,所以要取反
         float groundAngle = Vector3.Angle(hit.normal, -downwardsRayFromCapsuleCenter.direction);
-        Debug.Log("groundAngle: " + groundAngle);
         //通过我们自定义设置的动画曲线,传入斜坡角度,输出应该在斜坡上行走的速度系数
         float slopeSpeedModifier = SetSlopeSpeedModifierOnAngle(groundAngle);
 
@@ -91,12 +90,14 @@ namespace XFramework.FSM
     {
       base.AddInputActionsCallbacks();
       stateMachine.player.Input.playerActions.Movement.canceled += OnMovementCanceled;
+      stateMachine.player.Input.playerActions.Dash.started += OnDashStarted;
     }
 
     protected override void RemoveInputActionsCallbacks()
     {
       base.RemoveInputActionsCallbacks();
       stateMachine.player.Input.playerActions.Movement.canceled -= OnMovementCanceled;
+      stateMachine.player.Input.playerActions.Dash.started -= OnDashStarted;
     }
     protected virtual void OnMove()
     {
@@ -116,10 +117,16 @@ namespace XFramework.FSM
 
     #region Input Methods
     // 溜达输入取消时
-    private void OnMovementCanceled(InputAction.CallbackContext context)
+    protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
     {
       //切换状态为空闲
       stateMachine.ChangeState(stateMachine.idlingState);
+    }
+
+    // 冲刺时
+    protected virtual void OnDashStarted(InputAction.CallbackContext context)
+    {
+      stateMachine.ChangeState(stateMachine.dashingState);
     }
     #endregion
   }

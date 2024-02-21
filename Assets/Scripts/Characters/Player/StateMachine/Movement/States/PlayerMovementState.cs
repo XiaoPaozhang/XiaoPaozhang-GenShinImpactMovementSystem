@@ -52,7 +52,20 @@ namespace XFramework.FSM
     {
       Move();
     }
+    public virtual void OnAnimationEnterEvent()
+    {
 
+    }
+
+    public virtual void OnAnimationExitEvent()
+    {
+
+    }
+
+    public virtual void OnAnimationTransitionEvent()
+    {
+
+    }
     #endregion
 
     #region 主要方法
@@ -71,7 +84,6 @@ namespace XFramework.FSM
 
       Vector3 targetRotationDirection = GetTargetRotationDirection(targetRotationYAngle);
       float movementSpeed = GetMovementSpeed();
-      Debug.Log("speed: " + movementSpeed);
       //获取玩家当前水平速度,用于每次叠加力时消减它,因为是采用的刚体addForce的方式
       Vector3 currentPlayerHorizontalVelocity = GetPlayerHorizontalVelocity();
       stateMachine.player.rb.AddForce(targetRotationDirection * movementSpeed - currentPlayerHorizontalVelocity, ForceMode.VelocityChange);
@@ -233,9 +245,7 @@ namespace XFramework.FSM
 
     protected virtual void OnWalkToggleStarted(InputAction.CallbackContext context)
     {
-      Debug.Log(stateMachine.ReusableData.ShouldWalk);
       stateMachine.ReusableData.ShouldWalk = !stateMachine.ReusableData.ShouldWalk;
-      Debug.Log(stateMachine.ReusableData.ShouldWalk);
     }
 
     #endregion

@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 namespace XFramework.FSM
 {
@@ -27,6 +24,20 @@ namespace XFramework.FSM
     public void PhysicsUpdate()
     {
       _currentState?.PhysicsUpdate();
+    }
+
+    public void OnAnimationEnterEvent()
+    {
+
+      _currentState?.OnAnimationEnterEvent();
+    }
+    public void OnAnimationExitEvent()
+    {
+      _currentState?.OnAnimationExitEvent();
+    }
+    public void OnAnimationTransitionEvent()
+    {
+      _currentState?.OnAnimationTransitionEvent();
     }
   }
 }

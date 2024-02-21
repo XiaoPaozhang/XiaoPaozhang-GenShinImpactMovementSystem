@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 namespace XFramework.FSM
 {
   public interface IState
@@ -10,5 +7,8 @@ namespace XFramework.FSM
     void HandleInput();
     void Update();
     void PhysicsUpdate();
+    void OnAnimationEnterEvent();
+    void OnAnimationExitEvent();
+    void OnAnimationTransitionEvent();
   }
 }
