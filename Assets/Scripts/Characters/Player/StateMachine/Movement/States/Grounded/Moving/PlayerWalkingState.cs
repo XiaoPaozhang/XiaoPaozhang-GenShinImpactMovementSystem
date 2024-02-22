@@ -15,6 +15,11 @@ namespace XFramework.FSM
       stateMachine.ReusableData.MovementSpeedModifier = movementData.WalkData.SpeedModifier;
     }
     #region  input methods
+    protected override void OnMovementCanceled(InputAction.CallbackContext context)
+    {
+      //切换状态为轻停止状态
+      stateMachine.ChangeState(stateMachine.lightStoppingState);
+    }
     //溜达状态切换时
     protected override void OnWalkToggleStarted(InputAction.CallbackContext context)
     {

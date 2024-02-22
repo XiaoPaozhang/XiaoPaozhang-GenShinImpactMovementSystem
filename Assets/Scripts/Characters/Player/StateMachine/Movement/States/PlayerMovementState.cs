@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,11 +21,12 @@ namespace XFramework.FSM
 
       InitializeData();
     }
-    //初始化,将旋转所需时间设置为0.14f
+
     private void InitializeData()
     {
-      stateMachine.ReusableData.TimeToReachTargetRotation = movementData.BaseRotationData.TargetRotationRechTime;
+      SetBaseRotationData();
     }
+
     #region IState 方法
     public virtual void Enter()
     {
@@ -130,6 +132,12 @@ namespace XFramework.FSM
     #endregion
 
     #region  Reusable Methods 可重用的方法
+    protected void SetBaseRotationData()
+    {
+      stateMachine.ReusableData.RotationData = movementData.BaseRotationData;
+      stateMachine.ReusableData.TimeToReachTargetRotation = stateMachine.ReusableData.RotationData.TargetRotationReachTime;
+    }
+
     //获取移动输入方向
     protected Vector3 GetMovementInputDirection()
     {
@@ -203,7 +211,6 @@ namespace XFramework.FSM
         angle = AddCameraRotationToAngle(angle);
       }
 
-      // angle = AddCameraRotationToAngle(angle);
       if (angle != stateMachine.ReusableData.CurrentTargetRotation.y)
       {
         UpdateTargetRotationData(angle);
@@ -238,6 +245,34 @@ namespace XFramework.FSM
     protected virtual void RemoveInputActionsCallbacks()
     {
       stateMachine.player.Input.playerActions.WalkToggle.started -= OnWalkToggleStarted;
+    }
+
+    //减速
+    protected void DecelerateHorizontally()
+    {
+      Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+      stateMachine.player.rb.AddForce(
+        -playerHorizontalVelocity
+        * stateMachine.ReusableData.MovementOnDecelerationForce
+        ,
+        ForceMode.Acceleration);
+    }
+
+    //用于修复因为刚体移动导致的小量位移
+    protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f)
+    {
+      //获取玩家水平移速
+      Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+      //转为二维向量
+      Vector2 playerHorizontalMovement = new Vector2(
+        playerHorizontalVelocity.x,
+        playerHorizontalVelocity.z
+      );
+
+      //判断移动向量模长是否大于最小模长,大于不需要修复
+      return playerHorizontalMovement.magnitude > minimumMagnitude;
     }
     #endregion
 

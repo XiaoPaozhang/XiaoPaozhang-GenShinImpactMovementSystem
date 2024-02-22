@@ -18,6 +18,7 @@ namespace XFramework.FSM
     public override void PhysicsUpdate()
     {
       base.PhysicsUpdate();
+
       Float();
     }
     #endregion

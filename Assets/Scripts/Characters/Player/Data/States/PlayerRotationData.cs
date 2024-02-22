@@ -6,6 +6,7 @@ namespace XFramework.FSM
   [Serializable]
   public class PlayerRotationData
   {
-    [field: SerializeField] public Vector3 TargetRotationRechTime { get; private set; }
+    [field: Header("到达目标旋转的时间,只填y轴")]
+    [field: SerializeField] public Vector3 TargetRotationReachTime { get; private set; }
   }
 }

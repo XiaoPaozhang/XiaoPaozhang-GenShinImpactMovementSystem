@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +10,8 @@ namespace XFramework.FSM
 
     private float startTime;//冲刺起始时间
     private int consecutiveDashesUsed;//连续冲刺已使用数
+
+    private bool shouldKeepRotating;//是否应该保持旋转
 
     public PlayerDashingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
     {
@@ -22,22 +25,41 @@ namespace XFramework.FSM
       //dash时修改移动系数
       stateMachine.ReusableData.MovementSpeedModifier = dashData.SpeedModifier;
 
+      stateMachine.ReusableData.RotationData = dashData.RotationData;
+
       //处理从静止状态转换过来的情况,添加一个力
       AddForceOnTransitionFromStationaryState();
+
+      //如果按下任何移动键,该值为true
+      shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
 
       UpdateConsecutiveDashes();
 
       startTime = Time.time;
     }
 
+    public override void Exit()
+    {
+      base.Exit();
+
+      SetBaseRotationData();
+    }
+
+    public override void PhysicsUpdate()
+    {
+      base.PhysicsUpdate();
+
+      if (!shouldKeepRotating)
+        return;
+
+      RotateTowardsTargetRotation();
+    }
     public override void OnAnimationTransitionEvent()
     {
-      base.OnAnimationTransitionEvent();
-
       //未输入时,dash转换为idle
       if (stateMachine.ReusableData.MovementInput == Vector2.zero)
       {
-        stateMachine.ChangeState(stateMachine.idlingState);
+        stateMachine.ChangeState(stateMachine.hardStoppingState);
         return;
       }
 
@@ -57,6 +79,9 @@ namespace XFramework.FSM
       //获取玩家面朝向
       Vector3 characterRotationDirection = stateMachine.player.transform.forward;
       characterRotationDirection.y = 0f;
+
+      //更新旋转,不考虑摄像机
+      UpdateTargetRotation(characterRotationDirection, false);
 
       //当玩家未输入时给一个力让其冲刺
       stateMachine.player.rb.velocity = characterRotationDirection * GetMovementSpeed();
@@ -99,11 +124,31 @@ namespace XFramework.FSM
     #region input methods
     protected override void OnMovementCanceled(InputAction.CallbackContext context)
     {
-
     }
     protected override void OnDashStarted(InputAction.CallbackContext context)
     {
     }
+    private void OnMovementPerformed(InputAction.CallbackContext context)
+    {
+      shouldKeepRotating = true;
+    }
+    #endregion
+
+    #region reusable methods
+    protected override void AddInputActionsCallbacks()
+    {
+      base.AddInputActionsCallbacks();
+
+      stateMachine.player.Input.playerActions.Movement.performed += OnMovementPerformed;
+    }
+
+    protected override void RemoveInputActionsCallbacks()
+    {
+      base.RemoveInputActionsCallbacks();
+
+      stateMachine.player.Input.playerActions.Movement.performed -= OnMovementPerformed;
+    }
+
     #endregion
   }
 }

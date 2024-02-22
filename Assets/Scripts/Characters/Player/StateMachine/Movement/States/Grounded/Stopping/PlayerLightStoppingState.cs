@@ -10,5 +10,14 @@ namespace XFramework.FSM
     {
     }
 
+    #region IState methods
+    public override void Enter()
+    {
+      base.Enter();
+
+      stateMachine.ReusableData.MovementOnDecelerationForce = movementData.StopData.LightDecelerationForce;
+    }
+
+    #endregion
   }
 }

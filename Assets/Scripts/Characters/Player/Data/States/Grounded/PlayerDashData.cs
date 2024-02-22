@@ -11,6 +11,10 @@ namespace XFramework.FSM
     [field: Range(1f, 3f)]
     public float SpeedModifier { get; private set; } = 2f;
 
+    // 旋转数据
+    [field: SerializeField]
+    public PlayerRotationData RotationData { get; private set; }
+
     // 连续dash的判定时间，如果两次dash的间隔小于这个值，就会被认为是连续的
     [field: SerializeField]
     [field: Range(0f, 2f)]
