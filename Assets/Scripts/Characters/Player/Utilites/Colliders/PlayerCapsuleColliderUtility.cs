@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   [Serializable]
   public class PlayerCapsuleColliderUtility : CapsuleColliderUtility

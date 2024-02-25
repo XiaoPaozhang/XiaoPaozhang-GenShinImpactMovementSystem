@@ -3,7 +3,7 @@ using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerSprintingState : PlayerMovingState
   {

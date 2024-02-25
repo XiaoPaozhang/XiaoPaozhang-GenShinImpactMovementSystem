@@ -1,6 +1,6 @@
 using UnityEngine.InputSystem;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerStoppingState : PlayerGroundedState
   {

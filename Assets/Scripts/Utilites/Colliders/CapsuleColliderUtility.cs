@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   /// <summary>
   /// 胶囊碰撞体类

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   [Serializable]
   public class PlayerIdleData

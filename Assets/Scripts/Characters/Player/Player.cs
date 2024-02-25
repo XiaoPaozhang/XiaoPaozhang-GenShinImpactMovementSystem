@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   //将Player组件添加到对象上时,也会自动添加 PlayerInput组件到对象上
   [RequireComponent(typeof(PlayerInput))]

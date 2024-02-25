@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerJumpingState : PlayerAirborneState
   {

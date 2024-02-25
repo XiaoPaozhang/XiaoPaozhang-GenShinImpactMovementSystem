@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Experimental.AI;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class CapsuleColliderData
   {

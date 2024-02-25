@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerFallingState : PlayerAirborneState
   {

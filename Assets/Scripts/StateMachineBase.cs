@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
 
   public abstract class StateMachineBase

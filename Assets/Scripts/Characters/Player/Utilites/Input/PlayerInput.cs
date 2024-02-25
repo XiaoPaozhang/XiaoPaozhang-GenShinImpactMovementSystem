@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerInput : MonoBehaviour
   {

@@ -1,4 +1,4 @@
-namespace XFramework.FSM
+namespace GenshinImpactMovementSystem
 {
   public class PlayerLightStoppingState : PlayerStoppingState
   {
