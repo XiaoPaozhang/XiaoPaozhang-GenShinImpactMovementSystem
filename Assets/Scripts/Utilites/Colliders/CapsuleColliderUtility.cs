@@ -27,6 +27,13 @@ namespace XFramework.FSM
       CapsuleColliderData = new CapsuleColliderData();
 
       CapsuleColliderData.Initialize(gameObject);
+
+      OnInitialize();
+    }
+
+    protected virtual void OnInitialize()
+    {
+
     }
 
     // 计算并设置胶囊碰撞器各个属性

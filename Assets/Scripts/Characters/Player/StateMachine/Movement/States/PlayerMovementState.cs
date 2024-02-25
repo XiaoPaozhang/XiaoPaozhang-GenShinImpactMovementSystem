@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,16 +14,21 @@ namespace XFramework.FSM
 
     protected PlayerGroundedData movementData;
 
+    protected PlayerAirborneData airborneData;
+
     protected float baseSpeed = 5f;//速度
     public PlayerMovementState(PlayerMovementStateMachine playerMovementStateMachine)
     {
       stateMachine = playerMovementStateMachine;
 
       movementData = stateMachine.player.data.groundedData;
+      airborneData = stateMachine.player.data.airborneData;
+
+      SetBaseCameraRecenteringData();
 
       InitializeData();
-    }
 
+    }
     private void InitializeData()
     {
       SetBaseRotationData();
@@ -30,7 +37,7 @@ namespace XFramework.FSM
     #region IState 方法
     public virtual void Enter()
     {
-      Debug.Log("State:" + GetType().Name);
+      Debug.Log("<color=#87CEEB>State: " + GetType().Name + "</color>");
 
       AddInputActionsCallbacks();
     }
@@ -68,6 +75,28 @@ namespace XFramework.FSM
     {
 
     }
+
+    public virtual void OnTriggerEnter(Collider other)
+    {
+      Debug.Log("<color=red>接触地面</color>");
+      if (stateMachine.player.LayerData.IsGroundLayer(other.gameObject.layer))
+      {
+        OnContactWithGround(other);
+
+        return;
+      }
+    }
+    public virtual void OnTriggerExit(Collider other)
+    {
+      Debug.Log("<color=red>离开地面</color>");
+      if (stateMachine.player.LayerData.IsGroundLayer(other.gameObject.layer))
+      {
+        OnContactWithGroundExited(other);
+
+        return;
+      }
+    }
+
     #endregion
 
     #region 主要方法
@@ -132,6 +161,20 @@ namespace XFramework.FSM
     #endregion
 
     #region  Reusable Methods 可重用的方法
+    protected void StartAnimation(int animationHash)
+    {
+      stateMachine.player.animator.SetBool(animationHash, true);
+    }
+    protected void StopAnimation(int animationHash)
+    {
+      stateMachine.player.animator.SetBool(animationHash, false);
+    }
+
+    protected void SetBaseCameraRecenteringData()
+    {
+      stateMachine.ReusableData.BackWardsCameraRecenteringData = movementData.BackWardsCameraRecenteringData;
+      stateMachine.ReusableData.SidewaysCameraRecenteringData = movementData.SidewaysCameraRecenteringData;
+    }
     protected void SetBaseRotationData()
     {
       stateMachine.ReusableData.RotationData = movementData.BaseRotationData;
@@ -146,12 +189,17 @@ namespace XFramework.FSM
 
 
     //获取移动速度
-    protected float GetMovementSpeed()
+    protected float GetMovementSpeed(bool shouldConsiderSlopes = true)
     {
+      float movementSpeed = movementData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier;
+
+      if (shouldConsiderSlopes)
+      {
+        movementSpeed *= stateMachine.ReusableData.MovementSlopesSpeedModifier;
+      }
+
       //移动速度 * 移动速度系数 * 在斜坡上时的速度系数
-      return movementData.BaseSpeed
-      * stateMachine.ReusableData.MovementSpeedModifier
-      * stateMachine.ReusableData.MovementOnSlopesSpeedModifier;
+      return movementSpeed;
     }
     //获取玩家水平速度
     protected Vector3 GetPlayerHorizontalVelocity()
@@ -236,15 +284,26 @@ namespace XFramework.FSM
     {
       stateMachine.player.rb.velocity = Vector3.zero;
     }
+    protected void ResetVerticalVelocity()
+    {
+      Vector3 playerHorizontalVeclocity = GetPlayerHorizontalVelocity();
 
+      stateMachine.player.rb.velocity = playerHorizontalVeclocity;
+    }
     protected virtual void AddInputActionsCallbacks()
     {
       stateMachine.player.Input.playerActions.WalkToggle.started += OnWalkToggleStarted;
+      stateMachine.player.Input.playerActions.Look.started += OnMouseMovementStarted;
+      stateMachine.player.Input.playerActions.Movement.performed += OnMovementPerformed;
+      stateMachine.player.Input.playerActions.Movement.canceled += OnMovementCanceled;
     }
 
     protected virtual void RemoveInputActionsCallbacks()
     {
       stateMachine.player.Input.playerActions.WalkToggle.started -= OnWalkToggleStarted;
+      stateMachine.player.Input.playerActions.Look.started -= OnMouseMovementStarted;
+      stateMachine.player.Input.playerActions.Movement.performed -= OnMovementPerformed;
+      stateMachine.player.Input.playerActions.Movement.canceled -= OnMovementCanceled;
     }
 
     //减速
@@ -254,7 +313,18 @@ namespace XFramework.FSM
 
       stateMachine.player.rb.AddForce(
         -playerHorizontalVelocity
-        * stateMachine.ReusableData.MovementOnDecelerationForce
+        * stateMachine.ReusableData.MovementDecelerationForce
+        ,
+        ForceMode.Acceleration);
+    }
+    //减速上升
+    protected void DecelerateVertically()
+    {
+      Vector3 playerVerticalVelocity = GetPlayerVerticalVelocity();
+
+      stateMachine.player.rb.AddForce(
+        -playerVerticalVelocity
+        * stateMachine.ReusableData.MovementDecelerationForce
         ,
         ForceMode.Acceleration);
     }
@@ -274,6 +344,89 @@ namespace XFramework.FSM
       //判断移动向量模长是否大于最小模长,大于不需要修复
       return playerHorizontalMovement.magnitude > minimumMagnitude;
     }
+    protected bool IsMovingUp(float minimumVelocity = 0.1f)
+    {
+      return GetPlayerVerticalVelocity().y > minimumVelocity;
+    }
+
+    protected bool IsMovingDown(float minimumVelocity = 0.1f)
+    {
+      return GetPlayerVerticalVelocity().y < -minimumVelocity;
+    }
+
+
+
+    protected virtual void OnContactWithGround(Collider other)
+    {
+    }
+    protected virtual void OnContactWithGroundExited(Collider other)
+    {
+
+    }
+    protected void UpdateCameraRecenteringState(Vector2 movementInput)
+    {
+      if (movementInput == Vector2.zero)
+      {
+        return;
+      }
+
+      if (movementInput == Vector2.up)
+      {
+        DisableCameraRecentering();
+
+        return;
+      }
+
+      float cameraVerticalAngle = stateMachine.player.MainCameraTransform.eulerAngles.x;
+
+      if (cameraVerticalAngle >= 270f)
+      {
+        cameraVerticalAngle -= 360f;
+      }
+
+      cameraVerticalAngle = Mathf.Abs(cameraVerticalAngle);
+
+      if (movementInput == Vector2.down)
+      {
+        SetCameraRecenteringState(cameraVerticalAngle, stateMachine.ReusableData.BackWardsCameraRecenteringData);
+
+        return;
+      }
+
+      SetCameraRecenteringState(cameraVerticalAngle, stateMachine.ReusableData.SidewaysCameraRecenteringData);
+    }
+    protected void SetCameraRecenteringState(float cameraVerticalAngle, List<PlayerCameraRecenteringData> cameraRecenteringData)
+    {
+      foreach (PlayerCameraRecenteringData recenteringData in cameraRecenteringData)
+      {
+        if (!recenteringData.IsWithinRange(cameraVerticalAngle))
+        {
+          continue;
+        }
+
+        EnableCameraRecentering(recenteringData.WaitTime, recenteringData.RecenteringTime);
+
+        return;
+      }
+
+      DisableCameraRecentering();
+    }
+    protected void EnableCameraRecentering(float waitTime = -1f, float recenteringTime = -1f)
+    {
+      float movementSpeed = GetMovementSpeed();
+
+      if (movementSpeed == 0f)
+      {
+        movementSpeed = movementData.BaseSpeed;
+      }
+
+      stateMachine.player.cameraUtility.EnableRecentering(waitTime, recenteringTime, movementData.BaseSpeed, movementSpeed);
+    }
+
+    protected void DisableCameraRecentering()
+    {
+      stateMachine.player.cameraUtility.DisableRecentering();
+    }
     #endregion
 
     #region input methods
@@ -282,6 +435,21 @@ namespace XFramework.FSM
     {
       stateMachine.ReusableData.ShouldWalk = !stateMachine.ReusableData.ShouldWalk;
     }
+
+    protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
+    {
+      DisableCameraRecentering();
+    }
+    private void OnMouseMovementStarted(InputAction.CallbackContext context)
+    {
+      UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
+    }
+
+    protected virtual void OnMovementPerformed(InputAction.CallbackContext context)
+    {
+      UpdateCameraRecenteringState(context.ReadValue<Vector2>());
+    }
+
 
     #endregion
   }

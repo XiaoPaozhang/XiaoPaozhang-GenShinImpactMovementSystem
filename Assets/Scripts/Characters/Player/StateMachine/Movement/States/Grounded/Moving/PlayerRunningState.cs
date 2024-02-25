@@ -30,12 +30,23 @@ namespace XFramework.FSM
 
     public override void Enter()
     {
-      base.Enter();
-
       // 设置正确的速度修饰符
       stateMachine.ReusableData.MovementSpeedModifier = movementData.RunData.SpeedModifier;
 
+      base.Enter();
+
+      StartAnimation(stateMachine.player.animationData.RunParameterHash);
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.MediumForce;
+
       startTime = Time.time;
+    }
+    public override void Exit()
+    {
+      base.Exit();
+
+      StopAnimation(stateMachine.player.animationData.RunParameterHash);
+
     }
     #endregion
 
@@ -56,6 +67,8 @@ namespace XFramework.FSM
     {
       //切换状态为中停止状态
       stateMachine.ChangeState(stateMachine.mediumStoppingState);
+
+      base.OnMovementCanceled(context);
     }
     //溜达状态切换时
     protected override void OnWalkToggleStarted(InputAction.CallbackContext context)

@@ -20,15 +20,19 @@ namespace XFramework.FSM
     #region IState methods
     public override void Enter()
     {
-      base.Enter();
-
       //dash时修改移动系数
       stateMachine.ReusableData.MovementSpeedModifier = dashData.SpeedModifier;
+
+      base.Enter();
+
+      StartAnimation(stateMachine.player.animationData.DashParameterHash);
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.StrongForce;
 
       stateMachine.ReusableData.RotationData = dashData.RotationData;
 
       //处理从静止状态转换过来的情况,添加一个力
-      AddForceOnTransitionFromStationaryState();
+      Dash();
 
       //如果按下任何移动键,该值为true
       shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
@@ -38,9 +42,12 @@ namespace XFramework.FSM
       startTime = Time.time;
     }
 
+
     public override void Exit()
     {
       base.Exit();
+
+      StopAnimation(stateMachine.player.animationData.DashParameterHash);
 
       SetBaseRotationData();
     }
@@ -65,26 +72,31 @@ namespace XFramework.FSM
 
       //否则转换为sprint
       stateMachine.ChangeState(stateMachine.sprintingState);
-
     }
     #endregion
 
     #region main methods
-    private void AddForceOnTransitionFromStationaryState()
+    private void Dash()
     {
-      //如果有方向输入,就跳过
-      if (stateMachine.ReusableData.MovementInput != Vector2.zero)
-        return;
 
       //获取玩家面朝向
-      Vector3 characterRotationDirection = stateMachine.player.transform.forward;
-      characterRotationDirection.y = 0f;
+      Vector3 dashDirection = stateMachine.player.transform.forward;
+
+      dashDirection.y = 0f;
 
       //更新旋转,不考虑摄像机
-      UpdateTargetRotation(characterRotationDirection, false);
+      UpdateTargetRotation(dashDirection, false);
+
+      //如果有方向输入,就跳过
+      if (stateMachine.ReusableData.MovementInput != Vector2.zero)
+      {
+        UpdateTargetRotation(GetMovementInputDirection());
+
+        dashDirection = GetTargetRotationDirection(stateMachine.ReusableData.CurrentTargetRotation.y);
+      }
 
       //当玩家未输入时给一个力让其冲刺
-      stateMachine.player.rb.velocity = characterRotationDirection * GetMovementSpeed();
+      stateMachine.player.rb.velocity = dashDirection * GetMovementSpeed(false);
     }
 
     //更新连续冲刺次数
@@ -122,13 +134,10 @@ namespace XFramework.FSM
     #endregion
 
     #region input methods
-    protected override void OnMovementCanceled(InputAction.CallbackContext context)
-    {
-    }
     protected override void OnDashStarted(InputAction.CallbackContext context)
     {
     }
-    private void OnMovementPerformed(InputAction.CallbackContext context)
+    protected override void OnMovementPerformed(InputAction.CallbackContext context)
     {
       shouldKeepRotating = true;
     }

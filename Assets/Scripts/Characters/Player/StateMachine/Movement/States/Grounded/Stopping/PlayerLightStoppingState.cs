@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace XFramework.FSM
 {
   public class PlayerLightStoppingState : PlayerStoppingState
@@ -15,7 +11,9 @@ namespace XFramework.FSM
     {
       base.Enter();
 
-      stateMachine.ReusableData.MovementOnDecelerationForce = movementData.StopData.LightDecelerationForce;
+      stateMachine.ReusableData.MovementDecelerationForce = movementData.StopData.LightDecelerationForce;
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.WeakForce;
     }
 
     #endregion

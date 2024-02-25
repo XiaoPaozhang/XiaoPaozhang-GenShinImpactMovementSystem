@@ -10,9 +10,21 @@ namespace XFramework.FSM
     #region IState methods
     public override void Enter()
     {
+      stateMachine.ReusableData.MovementSpeedModifier = 0f;
+
+      SetBaseRotationData();
+
       base.Enter();
 
-      stateMachine.ReusableData.MovementSpeedModifier = 0f;
+      StartAnimation(stateMachine.player.animationData.StoppingParameterHash);
+
+    }
+    public override void Exit()
+    {
+      base.Exit();
+
+      StopAnimation(stateMachine.player.animationData.StoppingParameterHash);
+
     }
 
     public override void PhysicsUpdate()
@@ -30,8 +42,7 @@ namespace XFramework.FSM
 
     public override void OnAnimationTransitionEvent()
     {
-      stateMachine.ChangeState(stateMachine.idlingState)
-;
+      stateMachine.ChangeState(stateMachine.idlingState);
     }
     #endregion
     #region Reusable Methods
@@ -43,21 +54,19 @@ namespace XFramework.FSM
     }
     protected override void RemoveInputActionsCallbacks()
     {
-      base.AddInputActionsCallbacks();
+      base.RemoveInputActionsCallbacks();
 
       stateMachine.player.Input.playerActions.Movement.started -= OnMovementStarted;
     }
 
-    private void OnMovementStarted(InputAction.CallbackContext context)
-    {
-      OnMove();
-    }
 
     #endregion
 
     #region input methods
-    protected override void OnMovementCanceled(InputAction.CallbackContext context)
+
+    private void OnMovementStarted(InputAction.CallbackContext context)
     {
+      OnMove();
     }
     #endregion
   }

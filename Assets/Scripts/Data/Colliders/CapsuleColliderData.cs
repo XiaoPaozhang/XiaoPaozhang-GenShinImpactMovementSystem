@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Experimental.AI;
 
 namespace XFramework.FSM
 {
@@ -6,6 +7,7 @@ namespace XFramework.FSM
   {
     public CapsuleCollider Collider { get; private set; }
     public Vector3 ColliderCenterInLocalSpace { get; private set; }
+    public Vector3 ColliderVerticalExtents { get; private set; }
 
     // 初始化碰撞体引用(单例)
     public void Initialize(GameObject gameObject)
@@ -19,6 +21,8 @@ namespace XFramework.FSM
     public void UpdateColliderData()
     {
       ColliderCenterInLocalSpace = Collider.center;
+
+      ColliderVerticalExtents = new Vector3(0f, Collider.bounds.extents.y, 0f);
     }
   }
 }

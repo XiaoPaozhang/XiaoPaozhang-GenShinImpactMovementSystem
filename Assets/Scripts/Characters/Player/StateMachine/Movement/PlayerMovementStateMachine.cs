@@ -1,6 +1,4 @@
 
-using System.Net.Http.Headers;
-using UnityEditor;
 
 namespace XFramework.FSM
 {
@@ -21,6 +19,14 @@ namespace XFramework.FSM
     public PlayerMediumStoppingState mediumStoppingState { get; }
     public PlayerHardStoppingState hardStoppingState { get; }
 
+    public PlayerJumpingState jumpingState { get; }
+    public PlayerFallingState fallingState { get; }
+
+
+    public PlayerLightLandingState lightLandingState { get; }
+    public PlayerRollingLandingState rollingLandingState { get; }
+    public PlayerHardLandingState hardLandingState { get; }
+
     public PlayerMovementStateMachine(Player player)
     {
       this.player = player;
@@ -37,6 +43,13 @@ namespace XFramework.FSM
       lightStoppingState = new PlayerLightStoppingState(this);
       mediumStoppingState = new PlayerMediumStoppingState(this);
       hardStoppingState = new PlayerHardStoppingState(this);
+
+      jumpingState = new PlayerJumpingState(this);
+      fallingState = new PlayerFallingState(this);
+
+      lightLandingState = new PlayerLightLandingState(this);
+      hardLandingState = new PlayerHardLandingState(this);
+      rollingLandingState = new PlayerRollingLandingState(this);
 
     }
   }

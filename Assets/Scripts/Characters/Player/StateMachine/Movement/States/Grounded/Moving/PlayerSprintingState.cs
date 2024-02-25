@@ -8,8 +8,9 @@ namespace XFramework.FSM
   public class PlayerSprintingState : PlayerMovingState
   {
     private PlayerSprintData sprintData;
-    private bool keepSprintingInput;//是否保持冲刺输入
     private float startTime;//记录时间
+    private bool keepSprintingInput;//是否保持冲刺输入
+    private bool shouldResetSprintState;
 
     public PlayerSprintingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
     {
@@ -18,9 +19,15 @@ namespace XFramework.FSM
     #region IState methods
     public override void Enter()
     {
+      stateMachine.ReusableData.MovementSpeedModifier = sprintData.SpeedModifier;
+
       base.Enter();
 
-      stateMachine.ReusableData.MovementSpeedModifier = sprintData.SpeedModifier;
+      StartAnimation(stateMachine.player.animationData.SprintParameterHash);
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.StrongForce;
+
+      shouldResetSprintState = true;
 
       startTime += Time.time;
     }
@@ -28,7 +35,16 @@ namespace XFramework.FSM
     {
       base.Exit();
 
-      keepSprintingInput = false;
+      StopAnimation(stateMachine.player.animationData.SprintParameterHash);
+
+      if (shouldResetSprintState)
+      {
+
+        keepSprintingInput = false;
+
+        stateMachine.ReusableData.ShouldSprint = false;
+      }
+
     }
     public override void Update()
     {
@@ -62,15 +78,6 @@ namespace XFramework.FSM
     }
     #endregion
 
-    #region  input methods
-    protected override void OnMovementCanceled(InputAction.CallbackContext context)
-    {
-      //切换状态为重停止状态
-      stateMachine.ChangeState(stateMachine.hardStoppingState);
-    }
-
-    #endregion
-
     #region reusable methods
     protected override void AddInputActionsCallbacks()
     {
@@ -86,14 +93,41 @@ namespace XFramework.FSM
 
       stateMachine.player.Input.playerActions.Sprint.performed -= OnSprintPerformed;
     }
+
+    protected override void OnFall()
+    {
+      shouldResetSprintState = false;
+
+      base.OnFall();
+
+    }
     #endregion
 
     #region input methods
+
+    protected override void OnMovementCanceled(InputAction.CallbackContext context)
+    {
+      //切换状态为重停止状态
+      stateMachine.ChangeState(stateMachine.hardStoppingState);
+
+      base.OnMovementCanceled(context);
+    }
+    protected override void OnJumpStarted(InputAction.CallbackContext context)
+    {
+      shouldResetSprintState = false;
+
+      base.OnJumpStarted(context);
+    }
+
     // 按住了shift持续1秒生效
     private void OnSprintPerformed(InputAction.CallbackContext context)
     {
       keepSprintingInput = true;
+
+      stateMachine.ReusableData.ShouldSprint = true;
+
     }
+
     #endregion
   }
 }

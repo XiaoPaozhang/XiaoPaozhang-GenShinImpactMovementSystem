@@ -11,9 +11,19 @@ namespace XFramework.FSM
     {
       base.Enter();
 
-      stateMachine.ReusableData.MovementOnDecelerationForce = movementData.StopData.HardDecelerationForce;
-    }
+      StartAnimation(stateMachine.player.animationData.HardStopParameterHash);
 
+      stateMachine.ReusableData.MovementDecelerationForce = movementData.StopData.HardDecelerationForce;
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.StrongForce;
+    }
+    public override void Exit()
+    {
+      base.Exit();
+
+      StopAnimation(stateMachine.player.animationData.HardStopParameterHash);
+
+    }
     #endregion
 
     #region Reusable methods

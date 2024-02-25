@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace XFramework.FSM
 {
   public class PlayerMediumStoppingState : PlayerStoppingState
@@ -16,9 +12,19 @@ namespace XFramework.FSM
     {
       base.Enter();
 
-      stateMachine.ReusableData.MovementOnDecelerationForce = movementData.StopData.MediumDecelerationForce;
-    }
+      StartAnimation(stateMachine.player.animationData.MediumStopParameterHash);
 
+      stateMachine.ReusableData.MovementDecelerationForce = movementData.StopData.MediumDecelerationForce;
+
+      stateMachine.ReusableData.CurrentJumpForce = airborneData.jumpData.MediumForce;
+    }
+    public override void Exit()
+    {
+      base.Exit();
+
+      StopAnimation(stateMachine.player.animationData.MediumStopParameterHash);
+
+    }
     #endregion
   }
 }

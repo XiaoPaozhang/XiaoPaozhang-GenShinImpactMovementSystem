@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace XFramework.FSM
 {
   public interface IState
@@ -10,5 +12,7 @@ namespace XFramework.FSM
     void OnAnimationEnterEvent();
     void OnAnimationExitEvent();
     void OnAnimationTransitionEvent();
+    void OnTriggerEnter(Collider other);
+    void OnTriggerExit(Collider other);
   }
 }

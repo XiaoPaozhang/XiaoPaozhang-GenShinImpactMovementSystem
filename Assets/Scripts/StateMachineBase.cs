@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 namespace XFramework.FSM
 {
 
@@ -38,6 +40,15 @@ namespace XFramework.FSM
     public void OnAnimationTransitionEvent()
     {
       _currentState?.OnAnimationTransitionEvent();
+    }
+    public void OnTriggerEnter(Collider Other)
+    {
+      _currentState.OnTriggerEnter(Other);
+    }
+
+    public void OnTriggerExit(Collider other)
+    {
+      _currentState.OnTriggerExit(other);
     }
   }
 }
